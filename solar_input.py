@@ -3,6 +3,7 @@
 
 from solar_objects import Star, Planet
 import numpy as np
+from matplotlib import rc
 import matplotlib.pyplot as plt
 
 
@@ -50,7 +51,10 @@ def parse_parameters(line, space_object):
     **line** — строка с описание звезды.
     **star** — объект звезды.
     """
-    obj_type, r, color, m, x, y, Vx, Vy = line.split()
+    try:
+        obj_type, r, color, m, x, y, Vx, Vy = line.split()
+    except:
+        raise TypeError("Non-valid line")
     obj_type = obj_type.lower()
     m = float(m)
     x = float(x)
@@ -89,29 +93,28 @@ def graphics(space_objects):
         times = obj.times
         cm = obj.cm
 
+        fig, axs = plt.subplots(1, 3, figsize=(12, 5))
+
         #subplot 1
-        sp = plt.subplot(131)
-        plt.plot(times, speeds)
-        plt.xlabel(r'$t, \text{с}$')
-        plt.ylabel(r'$v, dfrac{\text{м}}{\text{с}}$')
-        plt.title(r'$v(t)$')
-        plt.grid(True)
+        axs[0].plot(times, speeds)
+        axs[0].set_xlabel(r't, \text{с}')
+        axs[0].set_ylabel(r'v, dfrac{\text{м}}{\text{с}}')
+        axs[0].set_title(r'$(t)')
+        axs[0].grid(True)
 
         #subplot 2
-        sp = plt.subplot(132)
-        plt.plot(times, cm)
-        plt.xlabel(r'$t, \text{с}$')
-        plt.ylabel(r'$r, \text{м}$')
-        plt.title(r'$r(t)$')
-        plt.grid(True)
+        axs[1].plot(times, cm)
+        axs[1].set_xlabel(r't, \text{с}')
+        axs[1].set_ylabel(r'r, \text{м}')
+        axs[1].set_title(r'r(t)')
+        axs[1].grid(True)
 
         #subplot 3
-        sp =plt.subplot(133)
-        plt.plot(speeds, cm)
-        plt.xlabel(r'$v, \dfrac{\text{м}}{\text{с}}$')
-        plt.ylabel(r'$r, \text{м}$')
-        plt.title(r'$v(r)$')
-        plt.grid(True)
+        axs[2].plot(speeds, cm)
+        axs[2].set_xlabel(r'v, \dfrac{\text{м}}{\text{с}}')
+        axs[2].set_ylabel(r'r, \text{м}')
+        axs[2].set_title(r'v(r)')
+        axs[2].grid(True)
 
         plt.show()
 
