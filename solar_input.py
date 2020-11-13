@@ -2,6 +2,8 @@
 # license: GPLv3
 
 from solar_objects import Star, Planet
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def read_space_objects_data_from_file(input_filename):
@@ -21,24 +23,25 @@ def read_space_objects_data_from_file(input_filename):
             object_type = line.split()[0].lower()
             if object_type == "star":
                 star = Star()
-                parse_star_parameters(line, star)
+                star = parse_parameters(line, star)
                 objects.append(star)
-            if object_type == "planet":
+            elif object_type == "planet":
                 planet = Planet()
-                parse_star_parameters(line, planet)
+                planet = parse_parameters(line, planet)
                 objects.append(planet)
-            else:
+            if object_type != 'star' and object_type != 'planet':
                 print("Unknown space object")
 
     return objects
 
 
-def parse_star_parameters(line, star):
-    """Считывает данные о звезде из строки.
+def parse_parameters(line, space_object):
+    """Считывает данные о космическом объекте из строки.
     Входная строка должна иметь слеюущий формат:
-    Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
+    Type <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
 
-    Здесь (x, y) — координаты зведы, (Vx, Vy) — скорость.
+    Здесь (x, y) — координаты объекта, (Vx, Vy) — скорость.
+    Type это тип объекта -- Star или Planet.
     Пример строки:
     Star 10 red 1000 1 2 3 4
 
@@ -47,40 +50,18 @@ def parse_star_parameters(line, star):
     **line** — строка с описание звезды.
     **star** — объект звезды.
     """
-    _, r, color, m, x, y, Vx, Vy = line.split()
-    star.m = float(m)
-    star.x = float(x)
-    star.y = float(y)
-    star.R = float(r)
-    star.Vx = float(Vx)
-    star.Vy = float(Vy)
-    star.color = color
-    
-
-
-def parse_planet_parameters(line, planet):
-    """Считывает данные о планете из строки.
-    Предполагается такая строка:
-    Входная строка должна иметь слеюущий формат:
-    Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
-
-    Здесь (x, y) — координаты планеты, (Vx, Vy) — скорость.
-    Пример строки:
-    Planet 10 red 1000 1 2 3 4
-
-    Параметры:
-
-    **line** — строка с описание планеты.
-    **planet** — объект планеты.
-    """
-    _, r, color, m, x, y, Vx, Vy = line.split()
-    planet.m = float(m)
-    planet.x = float(x)
-    planet.y = float(y)
-    planet.R = float(r)
-    planet.Vx = float(Vx)
-    planet.Vy = float(Vy)
-    planet.color = color
+    obj_type, r, color, m, x, y, Vx, Vy = line.split()
+    obj_type = obj_type.lower()
+    m = float(m)
+    x = float(x)
+    y = float(y)
+    r = float(r)
+    Vx = float(Vx)
+    Vy = float(Vy)
+    if obj_type == 'star':
+        return Star(m, x, y, r, Vx, Vy, color)
+    if obj_type == 'planet':
+        return Planet(m, x, y, r, Vx, Vy, color)
 
 
 def write_space_objects_data_to_file(output_filename, space_objects):
@@ -94,10 +75,45 @@ def write_space_objects_data_to_file(output_filename, space_objects):
     **output_filename** — имя входного файла
     **space_objects** — список объектов планет и звёзд
     """
-    with open(output_filename, 'w') as out_file:
-        for obj in space_objects:
-            data = obj.get_param()
-            print(data, file=output_filename)
+    output = open(output_filename, 'a')
+    for obj in space_objects:
+        data = obj.get_param()
+        output.write(data)
+    output.close()
+    graphics(space_objects)
+
+
+def graphics(space_objects):
+    for obj in space_objects:
+        speeds = obj.speeds
+        times = obj.times
+        cm = obj.cm
+
+        #subplot 1
+        sp = plt.subplot(131)
+        plt.plot(times, speeds)
+        plt.xlabel(r'$t, \text{с}$')
+        plt.ylabel(r'$v, dfrac{\text{м}}{\text{с}}$')
+        plt.title(r'$v(t)$')
+        plt.grid(True)
+
+        #subplot 2
+        sp = plt.subplot(132)
+        plt.plot(times, cm)
+        plt.xlabel(r'$t, \text{с}$')
+        plt.ylabel(r'$r, \text{м}$')
+        plt.title(r'$r(t)$')
+        plt.grid(True)
+
+        #subplot 3
+        sp =plt.subplot(133)
+        plt.plot(speeds, cm)
+        plt.xlabel(r'$v, \dfrac{\text{м}}{\text{с}}$')
+        plt.ylabel(r'$r, \text{м}$')
+        plt.title(r'$v(r)$')
+        plt.grid(True)
+
+        plt.show()
 
 
 # FIXME: хорошо бы ещё сделать функцию, сохраняющую статистику в заданный файл...

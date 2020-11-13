@@ -5,13 +5,39 @@ G = 6.67408E-11
 """Гравитационная постоянная Ньютона G"""
 
 
+def save_data_for_graphics(space_objects, t):
+    """Вычисляет положение центра масс и расстояние от него до каждого из тел.
+    Сохраняет расстояние от центра масс, скорость и время для каждого из тел для построения графика.
+
+    Параметры:
+    **space_objects** — список объектов, которые воздействуют на тело.
+    **time** - настоящее время.
+    """
+    x_cm = 0
+    y_cm = 0
+    thing_x = 0
+    thing_y = 0
+    mass_total = 0
+    for obj in space_objects:
+        thing_x += obj.x*obj.m
+        thing_y += obj.y*obj.m
+        mass_total += obj.m
+    x_cm = thing_x/mass_total
+    y_cm = thing_y/mass_total
+    for obj in space_objects:
+        obj.cm += [((obj.x - x_cm)**2 + (obj.y - y_cm)**2)**0.5]
+        v = (obj.Vx**2 + obj.Vy**2)**0.5
+        obj.speeds += [v]
+        obj.times += [t]
+
+
 def calculate_force(body, space_objects):
     """Вычисляет силу, действующую на тело.
 
     Параметры:
 
     **body** — тело, для которого нужно вычислить дейстующую силу.
-    **space_objects** — список объектов, которые воздействуют на тело.
+    **space_objects** — список объектов системы.
     """
 
     body.Fx = body.Fy = 0
@@ -52,7 +78,6 @@ def recalculate_space_objects_positions(space_objects, dt):
         calculate_force(body, space_objects)
     for body in space_objects:
         move_space_object(body, dt)
-    
 
 
 if __name__ == "__main__":
